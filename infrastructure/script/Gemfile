@@ -1,0 +1,9 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+gem "rake"
+
+gem "oga"
+gem "faker"
+gem "aws-sdk-dynamodb"

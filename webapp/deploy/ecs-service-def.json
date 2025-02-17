@@ -1,0 +1,53 @@
+{
+  "deploymentConfiguration": {
+    "alarms": {
+      "enable": false,
+      "rollback": false,
+      "alarmNames": []
+    },
+    "deploymentCircuitBreaker": {
+      "enable": true,
+      "rollback": true
+    },
+    "maximumPercent": 200,
+    "minimumHealthyPercent": 0
+  },
+  "deploymentController": {
+    "type": "ECS"
+  },
+  "desiredCount": 1,
+  "enableECSManagedTags": true,
+  "enableExecuteCommand": true,
+  "healthCheckGracePeriodSeconds": 1,
+  "launchType": "EC2",
+  "loadBalancers": [
+    {
+      "containerName": "nginx",
+      "containerPort": 80,
+      "targetGroupArn": "{{ must_env `ALB_TG_ARN` }}"
+    }
+  ],
+  "networkConfiguration": {
+    "awsvpcConfiguration": {
+      "assignPublicIp": "DISABLED",
+      "securityGroups": [
+        "{{ must_env `ALB_SG_ID` }}"
+      ],
+      "subnets": [
+        "{{ must_env `ALB_SUBNET_ID` }}"
+      ]
+    }
+  },
+  "placementStrategy": [
+    {
+      "field": "attribute:ecs.availability-zone",
+      "type": "spread"
+    },
+    {
+      "field": "instanceId",
+      "type": "spread"
+    }
+  ],
+  "propagateTags": "NONE",
+  "schedulingStrategy": "REPLICA"
+}

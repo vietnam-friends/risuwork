@@ -1,0 +1,45 @@
+{
+  "containerDefinitions": [
+    {
+      "cpu": 0,
+      "essential": true,
+      "image": "{{ must_env `ACCOUNT_ID` }}.dkr.ecr.ap-northeast-1.amazonaws.com/benchmarker-repository:latest",
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-create-group": "true",
+          "awslogs-group": "/ecs/bench",
+          "awslogs-region": "ap-northeast-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "name": "bench",
+      "stopTimeout": 2,
+      "systemControls": [
+        {
+          "namespace": "net.ipv4.tcp_fin_timeout",
+          "value": "5"
+        },
+        {
+          "namespace": "net.ipv4.ip_local_port_range",
+          "value": "10000    65000"
+        }
+      ]
+    }
+  ],
+  "cpu": "2048",
+  "executionRoleArn": "arn:aws:iam::{{ must_env `ACCOUNT_ID` }}:role/ecs-task-execution-role",
+  "family": "bench",
+  "ipcMode": "",
+  "memory": "4096",
+  "networkMode": "awsvpc",
+  "pidMode": "",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "taskRoleArn": "arn:aws:iam::{{ must_env `ACCOUNT_ID` }}:role/ecs-task-role"
+}

@@ -1,0 +1,33 @@
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: ./cmd/lightbench/
+    binary: "lightbench"
+    flags:
+      - -trimpath
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - freebsd
+      - linux
+      - windows
+    goarch: # 64-bit only
+      - amd64
+      - arm64
+
+archives:
+  - format: tar.gz
+    name_template: "lightbench-{{ .Os }}-{{ .Arch }}"
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        format: zip
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  use: github
+  sort: asc

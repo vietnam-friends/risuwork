@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:risuwork}
+    username: ${DB_USER:isucon}
+    password: ${DB_PASS:isucon}
+
+server:
+  port: 8080
+  servlet:
+    session:
+      cookie:
+        name: session
+        http-only: true
+        max-age: 3600
+        path: /
+        same-site: Strict
+
+app:
+  init-script-path: /home/isucon/webapp/sql/init.sh

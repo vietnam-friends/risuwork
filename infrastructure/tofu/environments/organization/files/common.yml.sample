@@ -1,0 +1,6 @@
+# アカウントの登録メールアドレスルール定義
+# サンプルの定義だと、例えば `team_a` というチームアカウントの登録メールアドレスは admin+team_a@example.com となる
+---
+primary_email:
+  local: "admin"
+  domain: "example.com"

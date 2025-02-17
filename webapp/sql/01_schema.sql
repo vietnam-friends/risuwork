@@ -1,0 +1,54 @@
+DROP TABLE IF EXISTS application;
+DROP TABLE IF EXISTS job;
+DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS company;
+DROP TABLE IF EXISTS industry_category;
+
+CREATE TABLE industry_category (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE company (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    industry_id VARCHAR(255),
+    created_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6),
+    FOREIGN KEY (industry_id) REFERENCES industry_category(id)
+);
+
+CREATE TABLE user (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    user_type VARCHAR(10) NOT NULL,
+    company_id INT,
+    created_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+    FOREIGN KEY (company_id) REFERENCES company(id)
+);
+
+CREATE TABLE job (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    salary INT NOT NULL,
+    tags VARCHAR(2047) NOT NULL,
+    is_active BOOL NOT NULL DEFAULT TRUE,
+    is_archived BOOL NOT NULL DEFAULT FALSE,
+    create_user_id INT NOT NULL,
+    created_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) NOT NULL,
+    updated_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) NOT NULL,
+    FOREIGN KEY (create_user_id) REFERENCES user(id)
+);
+
+CREATE TABLE application (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    job_id INT,
+    user_id INT,
+    FOREIGN KEY (job_id) REFERENCES job(id),
+    FOREIGN KEY (user_id) REFERENCES user(id),
+    created_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)
+);
+

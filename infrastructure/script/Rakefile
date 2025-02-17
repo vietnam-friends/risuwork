@@ -1,0 +1,215 @@
+require "csv"
+require "yaml"
+require 'json'
+require "fileutils"
+
+yaml_path = File.expand_path "../tofu/files/teams.yml", __dir__
+json_path = File.expand_path "../../portal/lib/teams.json", __dir__
+
+task :generate_team_yml do
+  FileUtils.cp yaml_path, yaml_path + ".bkup"
+  FileUtils.cp json_path, json_path + ".bkup"
+
+  csv = CSV.read File.expand_path("team_list.csv", __dir__), headers: true
+  # tfから参照するyaml
+  yaml = {}
+  # portalから参照するjson
+  json = {}
+
+  id = 0
+  account = ""
+  csv.each do |row|
+    if row["team"]
+      id += 1
+      account = row["account"]
+      yaml[account] = {
+        "id" => id,
+        "name" => account,
+        "members" => [],
+      }
+
+      json[account] = row["team"]
+    end
+    if row["member"]
+      last_name, first_name = row["member"].split
+      yaml[account]["members"] << {
+        "first_name" => first_name,
+        "last_name" => last_name,
+        "email" => row["email"],
+        "github_username" => row["github"],
+      }
+    end
+  end
+
+  YAML.dump yaml, File.open(yaml_path, "w")
+  JSON.dump json, File.open(json_path, "w")
+end
+
+namespace :dynamodb do
+  require "faker"
+  require "aws-sdk-dynamodb"
+
+  TABLE_NAME = "benchmark_results"
+
+  task :truncate do
+    items = table.scan.items
+    JSON.dump items, File.open("backup.json", "w")
+    puts "Delete #{items.count} records."
+
+    items.each do |item|
+      if !item.key?("endpoint")
+        puts item["endpoint"]
+        table.delete_item key: { "id" => item["id"] }
+      else
+        puts "ok"
+      end
+      # table.delete_item key: { "id" => item["id"] }
+    end
+  end
+
+  task :generate_bench_score_seed do
+    teams = JSON.load File.open(json_path)
+    teams.keys.map do |team|
+      count = Faker::Number.between(from: 5, to: 20)
+      lang = ["go", "node", "java"][rand(3)]
+      items = count.times.map do
+        {
+          put_request: {
+            item: {
+              "id" => Faker::Number.leading_zero_number(digits: 16),
+              "team" => team,
+              "ended_at" => Faker::Time.between_dates(from: Date.today - 1, to: Date.today + 1, period: :all).strftime("%FT%TZ"),
+              "score" => Faker::Number.normal(mean: 10000, standard_deviation: 2500).to_i,
+              "lang" => lang,
+            }
+          }
+        }
+      end
+      items.each_slice(25) do |chunk|
+        client.batch_write_item({
+          request_items: {
+            TABLE_NAME => chunk
+          }
+        })
+      end
+    end
+  end
+
+  def client
+    @client ||= Aws::DynamoDB::Client.new
+  end
+
+  def table
+    @table ||= Aws::DynamoDB::Resource.new(client: client).table(TABLE_NAME)
+  end
+end
+
+namespace :tf do
+  task :generate_profile do
+    accounts = JSON.load File.open("accounts.json")
+    puts accounts
+    accounts.each do |k, v|
+      puts <<-"EOS"
+[profile risuwork-#{k}]
+sso_session = risuwork-unnei
+sso_account_id = #{v}
+sso_role_name = AdminUser
+region = ap-northeast-1  
+      EOS
+    end
+  end
+
+  task :apply_partial do
+    logger = Logger.new "apply_partial.log"
+    accounts = JSON.load File.open("accounts.json")
+    Dir.chdir "../tofu/environments/participants"
+    accounts.each do |k, v|
+      puts "# start apply to #{k}(#{v})"
+      # vpc
+      target = [
+        "aws_default_vpc.main",
+        # "aws_vpc.main",
+        "aws_default_security_group.main",
+        # "aws_vpc_peering_connection.main",
+        # "aws_route.peering",
+      ].join(",")
+      cmd = "tofu workspace select #{k} && tofu apply --auto-approve -target={#{target}}"
+      puts cmd
+      logger.info `#{cmd}`
+    end
+  end
+
+  task :apply_all do
+    logger = Logger.new "apply_all.log"
+    accounts = JSON.load File.open("accounts.json")
+    Dir.chdir "../tofu/environments/participants"
+    accounts.each do |k, v|
+      puts "# start apply to #{k}(#{v})"
+      # vpc
+      cmd = "tofu workspace select #{k} && tofu apply --auto-approve"
+      puts cmd
+      logger.info `#{cmd}`
+      exit
+    end
+  end
+
+  task :apply_parallel1 do
+    logger = Logger.new "apply_parallel1.log"
+    accounts = JSON.load File.open("accounts1.json")
+    Dir.chdir "../tofu/environments/participants"
+    accounts.each do |k, v|
+      puts "# start apply to #{k}(#{v})"
+      # vpc
+      cmd = "tofu workspace select #{k} && tofu apply --auto-approve"
+      puts cmd
+      logger.info `#{cmd}`
+    end
+  end
+  task :apply_parallel2 do
+    logger = Logger.new "apply_parallel2.log"
+    accounts = JSON.load File.open("accounts2.json")
+    Dir.chdir "../tofu/environments/participants"
+    accounts.each do |k, v|
+      puts "# start apply to #{k}(#{v})"
+      # vpc
+      cmd = "tofu workspace select #{k} && tofu apply --auto-approve"
+      puts cmd
+      logger.info `#{cmd}`
+    end
+  end
+  task :apply_parallel3 do
+    logger = Logger.new "apply_parallel3.log"
+    accounts = JSON.load File.open("accounts3.json")
+    Dir.chdir "../tofu/environments/participants"
+    accounts.each do |k, v|
+      puts "# start apply to #{k}(#{v})"
+      # vpc
+      cmd = "tofu workspace select #{k} && tofu apply --auto-approve"
+      puts cmd
+      logger.info `#{cmd}`
+    end
+  end
+end
+
+namespace :repo do
+  task :add_remote do
+    accounts = JSON.load File.open("accounts.json")
+    Dir.chdir "../../../base"
+    accounts.each do |k, v|
+      cmd = "git remote add #{k} git@github.com:risuwork/#{k}.git"
+      puts cmd
+      puts `#{cmd}`
+    end
+  end
+
+  task :push_source do
+    accounts = JSON.load File.open("accounts.json")
+    # accounts =  {"unnei2": "619071341713"}
+    Dir.chdir "../../../base"
+    accounts.each do |k, v|
+      cmd = "git push -q #{k} main"
+      puts cmd
+      puts `#{cmd}`
+    end
+  end
+end

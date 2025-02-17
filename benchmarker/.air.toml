@@ -1,0 +1,13 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o ./tmp/bench ./cmd/bench/..."
+bin = "tmp/bench"
+full_bin = "APP_ENV=dev APP_USER=air ./tmp/bench"
+include_ext = ["go", "tpl", "tmpl", "html"]
+exclude_regex = ["_test\\.go"]
+exclude_dir = ["pkg", "assets", "tmp", "vendor", "testdata"]
+exclude_unchanged = true
+log = "air.log"
+#args_bin = ["supervise", "--queue-url", "http://queue:9324/000000000000/default"]
