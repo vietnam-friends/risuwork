@@ -30,15 +30,9 @@ public class ApplicationsService {
             return new ApiResponse<>(response, HttpStatus.UNAUTHORIZED);
         }
 
-        // 応募一覧を取得
+        // N+1問題を解決: JOINを使って一度のクエリで応募と求人情報を取得
         List<ApplicationWithJobEntity> applicationWithJobEntityList
-                = applicationsDao.selectAllApplicationsByEmail(email);
-
-        // 求人情報を取得
-        for (ApplicationWithJobEntity applicationWithJobEntity : applicationWithJobEntityList) {
-            JobEntity jobEntity = applicationsDao.selectJobById(applicationWithJobEntity.getJob_id());
-            applicationWithJobEntity.setJob(jobEntity);
-        }
+                = applicationsDao.selectApplicationsWithJobByEmail(email);
 
         for (int i = 0; i < applicationWithJobEntityList.size(); i++) {
 

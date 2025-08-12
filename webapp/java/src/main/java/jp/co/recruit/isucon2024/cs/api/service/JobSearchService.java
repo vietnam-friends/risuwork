@@ -5,6 +5,7 @@ import jp.co.recruit.isucon2024.common.response.ApiResponse;
 import jp.co.recruit.isucon2024.cs.api.dao.JobSearchDao;
 import jp.co.recruit.isucon2024.cs.api.dto.JobWithCompanyDto;
 import jp.co.recruit.isucon2024.cs.api.entity.CompanyWithIndustryNameEntity;
+import jp.co.recruit.isucon2024.cs.api.entity.JobWithCompanyEntity;
 import jp.co.recruit.isucon2024.cs.api.form.JobSearchForm;
 import jp.co.recruit.isucon2024.cs.api.response.JobSearchResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +24,12 @@ public class JobSearchService {
 
     public ApiResponse<JobSearchResponse> jobSearch(JobSearchForm form) {
 
-        List<JobEntity> jobEntities = jobSearchDao.selectJobsBySearchParams(
-                form.getKeyword(), form.getTag(), form.getMin_salary(), form.getMax_salary());
+        // N+1問題を解決: JOINを使って一度のクエリで全データを取得
+        List<JobWithCompanyEntity> jobWithCompanyEntities = jobSearchDao.selectJobsWithCompanyBySearchParams(
+                form.getKeyword(), form.getTag(), form.getMin_salary(), form.getMax_salary(), form.getIndustry_id());
 
-        List<JobWithCompanyDto> jobWithCompanyDtoList =
-                jobEntitiesTojobWithCompanyDtoList(jobEntities, form.getIndustry_id());
+        List<JobWithCompanyDto> jobWithCompanyDtoList = 
+                jobWithCompanyEntitiesToDtoList(jobWithCompanyEntities);
 
         return new ApiResponse<>(toJobSearchResponse(jobWithCompanyDtoList, form.getPage()), HttpStatus.OK);
     }
@@ -41,6 +43,15 @@ public class JobSearchService {
                 continue;
             }
             jobWithCompanyDtoList.add(toJobWithCompanyDto(jobEntity, entity));
+        }
+        return jobWithCompanyDtoList;
+    }
+
+    // N+1問題解決済みの新しいメソッド
+    private List<JobWithCompanyDto> jobWithCompanyEntitiesToDtoList(List<JobWithCompanyEntity> entities) {
+        List<JobWithCompanyDto> jobWithCompanyDtoList = new ArrayList<>();
+        for (JobWithCompanyEntity entity : entities) {
+            jobWithCompanyDtoList.add(toJobWithCompanyDtoFromEntity(entity));
         }
         return jobWithCompanyDtoList;
     }
@@ -76,6 +87,28 @@ public class JobSearchService {
         dto.setCreated_at(jobEntity.getCreated_at());
         dto.setUpdated_at(jobEntity.getUpdated_at());
         dto.setCompany(entity);
+        return dto;
+    }
+
+    // N+1問題解決済みの新しいメソッド
+    private JobWithCompanyDto toJobWithCompanyDtoFromEntity(JobWithCompanyEntity entity) {
+        JobWithCompanyDto dto = new JobWithCompanyDto();
+        dto.setId(entity.getJob_id());
+        dto.setTitle(entity.getTitle());
+        dto.setDescription(entity.getDescription());
+        dto.setSalary((int)entity.getSalary());
+        dto.setTags(entity.getTags());
+        dto.setCreated_at(entity.getCreated_at());
+        dto.setUpdated_at(entity.getUpdated_at());
+        
+        // CompanyWithIndustryNameEntityを作成
+        CompanyWithIndustryNameEntity companyEntity = new CompanyWithIndustryNameEntity();
+        companyEntity.setId(entity.getCompany_id());
+        companyEntity.setName(entity.getCompany_name());
+        companyEntity.setIndustry(entity.getIndustry());
+        companyEntity.setIndustry_id(entity.getIndustry_id());
+        
+        dto.setCompany(companyEntity);
         return dto;
     }
 
