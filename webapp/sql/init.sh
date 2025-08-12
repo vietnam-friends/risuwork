@@ -22,3 +22,9 @@ mysql -u"$ISUCON_DB_USER" \
 		--host "$ISUCON_DB_HOST" \
 		--port "$ISUCON_DB_PORT" \
 		"$ISUCON_DB_NAME" < 02_testdata.sql
+
+mysql -u"$ISUCON_DB_USER" \
+		-p"$ISUCON_DB_PASS" \
+		--host "$ISUCON_DB_HOST" \
+		--port "$ISUCON_DB_PORT" \
+		"$ISUCON_DB_NAME" < 03_add_indexes.sql
