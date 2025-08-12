@@ -19,5 +19,6 @@ public class JobEntity {
     private int create_user_id;
     private Timestamp created_at;
     private Timestamp updated_at;
+    private Integer companyId; // For JOIN queries
 
 }

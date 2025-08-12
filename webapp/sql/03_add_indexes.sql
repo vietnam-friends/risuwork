@@ -34,6 +34,27 @@ CREATE INDEX idx_application_job_id ON application(job_id);
 -- 影響: 応募履歴のソートが5倍高速化
 CREATE INDEX idx_application_created_at ON application(created_at DESC);
 
+-- 9. 複合インデックス：求人検索の最適化（給与範囲 + アクティブ状態）
+CREATE INDEX idx_job_salary_active ON job(salary, is_active, is_archived);
+
+-- 10. 複合インデックス：応募の複合検索（ユーザー+求人）
+CREATE INDEX idx_application_user_job ON application(user_id, job_id);
+
+-- 11. ユーザータイプでの検索最適化
+CREATE INDEX idx_user_type ON user(user_type);
+
+-- 12. 最も効果的な複合インデックス追加（Handler_read_next対策）
+CREATE INDEX idx_job_comprehensive ON job(is_active, is_archived, salary, updated_at DESC, id DESC);
+
+-- 13. アプリケーション履歴の効率化
+CREATE INDEX idx_application_comprehensive ON application(user_id, created_at DESC, job_id);
+
+-- 14. 会社とユーザーの関連最適化
+CREATE INDEX idx_user_email_company ON user(email, company_id, user_type);
+
+-- 15. 求人作成者とアクティブ状態の複合インデックス
+CREATE INDEX idx_job_creator_status ON job(create_user_id, is_active, is_archived, updated_at DESC);
+
 -- インデックスの確認
 SHOW INDEXES FROM user;
 SHOW INDEXES FROM job;

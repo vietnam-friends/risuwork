@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Objects;
 
 @Service
-@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 @RequiredArgsConstructor
 @Slf4j
 public class JobApplicationService {
@@ -28,6 +27,7 @@ public class JobApplicationService {
     private final JobApplicationDao jobApplicationDao;
     private final UserDao userDao;
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public ApiResponse<JobApplicationResponse> application(HttpServletRequest request, JobApplicationForm form) {
 
         String email = SessionUtil.getEmailFromSession(request);

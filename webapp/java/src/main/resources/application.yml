@@ -10,6 +10,8 @@ spring:
       idle-timeout: 300000
       max-lifetime: 1800000
       leak-detection-threshold: 60000
+  jpa:
+    open-in-view: false
 
 server:
   port: 8080
@@ -24,3 +26,12 @@ server:
 
 app:
   init-script-path: /home/isucon/webapp/sql/init.sh
+
+logging:
+  level:
+    root: WARN
+    jp.co.recruit: WARN
+    org.springframework: WARN
+    com.zaxxer.hikari: WARN
+  pattern:
+    console: "%msg%n"

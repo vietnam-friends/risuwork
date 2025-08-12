@@ -17,13 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 @Slf4j
 public class CsSignupService {
 
     private final UserDao userDao;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public ApiResponse<CsSignUpResponse> signup(HttpServletRequest request, CsSignupForm form) {
 
         // パスワードをハッシュ化

@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Objects;
 
 @Service
-@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 @RequiredArgsConstructor
 @Slf4j
 public class CreateJobService {
@@ -27,6 +26,7 @@ public class CreateJobService {
     private final UserDao userDao;
     private final CreateJobDao createJobDao;
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public ApiResponse<CreateJobResponse> createJob(HttpServletRequest request, CreateJobForm form) {
 
         // ユーザーをDBから取得

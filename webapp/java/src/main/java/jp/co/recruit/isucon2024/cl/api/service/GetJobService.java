@@ -56,14 +56,8 @@ public class GetJobService {
             return new ApiResponse<>("No permission", HttpStatus.FORBIDDEN);
         }
 
-        // 求人への応募を取得
-        List<GetJobResponse.Application> applications = getJobDao.selectApplicationByJobId(jobId);
-
-        // 応募者の情報を取得
-        for (GetJobResponse.Application application : applications) {
-            UserEntity userEntity = userDao.selectUserByUserId(application.getUser_id());
-            application.setApplicant(toCSUser(userEntity));
-        }
+        // N+1問題解決: 応募情報とユーザー情報を一度に取得
+        List<GetJobResponse.Application> applications = getJobDao.selectApplicationsWithUserByJobId(jobId);
 
         return new ApiResponse<>(toResponse(job, applications), HttpStatus.OK);
 
