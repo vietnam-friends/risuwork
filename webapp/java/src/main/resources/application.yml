@@ -4,12 +4,13 @@ spring:
     username: ${DB_USER:isucon}
     password: ${DB_PASS:isucon}
     hikari:
-      maximum-pool-size: 100
-      minimum-idle: 20
-      connection-timeout: 10000
-      idle-timeout: 300000
-      max-lifetime: 1800000
-      leak-detection-threshold: 60000
+      maximum-pool-size: 200
+      minimum-idle: 50
+      connection-timeout: 5000
+      idle-timeout: 180000
+      max-lifetime: 900000
+      leak-detection-threshold: 30000
+      validation-timeout: 3000
   jpa:
     open-in-view: false
 
