@@ -17,10 +17,10 @@ public class GetJobsDao {
     private final JdbcTemplate jdbcTemplate;
 
     private final String selectNotArchivedJobsByCompanyIdQuery =
-            "SELECT id, title, description, salary, tags, is_active, create_user_id, created_at, updated_at " +
-                    "FROM job " +
-                    "WHERE is_archived = false AND create_user_id IN (SELECT id FROM user WHERE company_id = ?) " +
-                    "ORDER BY updated_at DESC, id";
+            "SELECT j.id, j.title, j.description, j.salary, j.tags, j.is_active, j.create_user_id, j.created_at, j.updated_at " +
+                    "FROM job j JOIN user u ON j.create_user_id = u.id " +
+                    "WHERE j.is_archived = false AND u.company_id = ? " +
+                    "ORDER BY j.updated_at DESC, j.id";
 
     public List<JobEntity> selectNotArchivedJobsByCompanyId(int companyId) {
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(selectNotArchivedJobsByCompanyIdQuery, companyId);
