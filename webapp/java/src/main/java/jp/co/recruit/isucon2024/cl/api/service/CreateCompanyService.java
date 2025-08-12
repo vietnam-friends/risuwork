@@ -13,12 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 @Slf4j
 public class CreateCompanyService {
 
     private final CreateCompanyDao createCompanyDao;
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public ApiResponse<CreateCompanyResponse> createCompany(CreateCompanyForm form) {
 
         // 企業をデータベースに登録

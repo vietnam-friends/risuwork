@@ -16,13 +16,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
 @RequiredArgsConstructor
 public class ClSignupService {
 
     private final UserDao userDao;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public ApiResponse<ClSingUpResponse> signup(HttpServletRequest request, ClSignupForm form) {
 
         // パスワードをハッシュ化
