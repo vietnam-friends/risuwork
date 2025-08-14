@@ -15,31 +15,35 @@ services:
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
-      - --max-connections=2000
-      - --innodb-buffer-pool-size=2G
+      - --max-connections=3000
+      - --innodb-buffer-pool-size=3G
+      - --innodb-buffer-pool-instances=4
       - --innodb-flush-log-at-trx-commit=0
       - --innodb-flush-method=O_DIRECT
-      - --innodb-log-file-size=256M
-      - --innodb-log-buffer-size=32M
-      - --thread-cache-size=200
-      - --table-open-cache=4000
-      - --sort-buffer-size=4M
+      - --innodb-log-file-size=512M
+      - --innodb-log-buffer-size=64M
+      - --thread-cache-size=500
+      - --table-open-cache=8000
+      - --table-open-cache-instances=16
+      - --sort-buffer-size=8M
       - --read-buffer-size=4M
-      - --join-buffer-size=8M
-      - --innodb-read-io-threads=8
-      - --innodb-write-io-threads=8
-      - --innodb-redo-log-capacity=512M
-      - --tmp-table-size=128M
-      - --max-heap-table-size=128M
+      - --read-rnd-buffer-size=8M
+      - --join-buffer-size=16M
+      - --innodb-read-io-threads=16
+      - --innodb-write-io-threads=16
+      - --innodb-io-capacity=4000
+      - --innodb-io-capacity-max=8000
+      - --innodb-redo-log-capacity=1G
+      - --tmp-table-size=256M
+      - --max-heap-table-size=256M
       - --slow-query-log=1
-      - --slow-query-log-file=/var/log/mysql/slow.log
+      - --slow-query-log-file=/var/log/mysql/mysql-slow.log
       - --long-query-time=0.1
-      - --log-queries-not-using-indexes=1
-      - --back_log=1000
-      - --wait-timeout=60
-      - --interactive-timeout=60
-      - --net-read-timeout=30
-      - --net-write-timeout=30
+      - --performance-schema=OFF
+      - --skip-name-resolve
+      - --back_log=1500
+      - --innodb-autoinc-lock-mode=2
+      - --innodb-doublewrite=0
   java:
     build:
       context: ../../
@@ -51,6 +55,7 @@ services:
       - DB_HOST=mysql
       - AWS_XRAY_TRACING_NAME=disabled
       - AWS_XRAY_CONTEXT_MISSING=LOG_ERROR
+      - JAVA_OPTS=-Xmx2g -Xms2g -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:+ParallelRefProcEnabled -XX:+UnlockExperimentalVMOptions -XX:+AlwaysPreTouch -XX:InitiatingHeapOccupancyPercent=45 -XX:G1ReservePercent=20 -XX:G1HeapRegionSize=32m -XX:+DisableExplicitGC
     depends_on:
       - mysql
   nginx:
